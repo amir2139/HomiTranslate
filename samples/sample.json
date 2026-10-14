@@ -1,0 +1,26 @@
+{
+  "menu": {
+    "start": "Start Game",
+    "options": "Options",
+    "quit": "Quit"
+  },
+  "items": [
+    {
+      "id": "potion_01",
+      "name": "Healing Potion",
+      "desc": "Restores {0} HP to <color=#00ff00>one ally</color>."
+    },
+    {
+      "id": "sword_02",
+      "name": "Iron Sword",
+      "desc": "A sturdy blade forged in Eldoria.\nDeals %d damage."
+    }
+  ],
+  "dialog": [
+    "Welcome to Eldoria, traveler!",
+    "Seek out Captain Aldric in the Silver Keep.",
+    "[b]Warning:[/b] the Dark Forest is dangerous at night.",
+    "Gold: {{gold}}"
+  ],
+  "count": 3
+}

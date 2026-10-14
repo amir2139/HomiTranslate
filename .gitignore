@@ -1,0 +1,5 @@
+config.local.json
+.homitranslate/
+out/
+__pycache__/
+*.pyc

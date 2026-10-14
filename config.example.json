@@ -1,0 +1,9 @@
+{
+  "backend": "ollama",
+  "target": "fa",
+  "batch": 30,
+  "context": 3,
+  "shape": false,
+  "ollama": { "url": "http://127.0.0.1:11434", "model": "gemma3:12b" },
+  "openai": { "base_url": "https://api.deepseek.com", "api_key": "", "model": "deepseek-chat", "proxy": "" }
+}

@@ -1,0 +1,6 @@
+key,en,notes
+UI_START,Start Game,menu
+UI_QUIT,Quit,menu
+NPC_01,"Welcome to Eldoria, traveler!",greeting
+NPC_02,Captain Aldric guards the Silver Keep.,quest
+ITEM_1,Healing Potion,item

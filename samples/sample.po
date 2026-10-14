@@ -1,0 +1,15 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#: ui.c:10
+msgid "Start Game"
+msgstr ""
+
+msgid "You found %d coins.\nWell done!"
+msgstr ""
+
+msgid "One potion"
+msgid_plural "%d potions"
+msgstr[0] ""
+msgstr[1] ""

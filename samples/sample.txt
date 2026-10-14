@@ -1,0 +1,5 @@
+Welcome to Eldoria, traveler!
+
+Seek out Captain Aldric in the Silver Keep.
+The Dark Forest is dangerous at night.
+  Press <b>Enter</b> to continue.
