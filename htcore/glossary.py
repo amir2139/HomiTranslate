@@ -2,7 +2,7 @@
 import re
 from collections import Counter
 
-from .protect import protect, TOKEN_RE
+from .protect import protect, looks_technical, TOKEN_RE
 
 _STOP = {"the", "a", "an", "i", "you", "he", "she", "it", "we", "they", "this", "that", "these", "those",
          "and", "or", "but", "if", "is", "are", "was", "be", "to", "of", "in", "on", "at", "for", "with",
@@ -40,7 +40,7 @@ def extract(sources, max_terms=300, min_count=2):
     shorts = Counter()
     for t in texts:
         w = t.split()
-        if 1 <= len(w) <= 4 and len(t) <= 32 and not re.search(r"[.!?,;]$", t) and any(ch.isalpha() for ch in t):
+        if 1 <= len(w) <= 4 and len(t) <= 32 and not re.search(r"[.!?,;]$", t) and any(ch.isalpha() for ch in t) and not looks_technical(t):
             shorts[t] += 1
     for term, c in shorts.items():
         out.setdefault(term, c)
