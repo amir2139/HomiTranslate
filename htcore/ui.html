@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HomiTranslate</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--mut:#667085;--bd:#d9dde5;--pri:#2f6fed;--pri-tx:#fff;--ok:#1a8f4d;--warn:#b7791f;--bad:#c53030;--in:#fff}
+[data-theme=dark]{--bg:#12151c;--card:#1b2029;--tx:#e6e9ef;--mut:#9aa4b5;--bd:#2c3442;--pri:#5b8cff;--pri-tx:#0b1020;--ok:#4cc38a;--warn:#e0b04a;--bad:#ff7b7b;--in:#141922}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 Tahoma,"Segoe UI",system-ui,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
+header h1{font-size:18px;margin:0;flex:1}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:8px;padding:6px 10px}
+button{cursor:pointer;background:var(--card)}
+button.pri{background:var(--pri);color:var(--pri-tx);border-color:var(--pri)}
+button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.steps button{border-radius:20px;padding:4px 12px;font-size:13px}
+.steps button.on{background:var(--pri);color:var(--pri-tx);border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font-size:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+.row label{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--mut)}
+.row input[type=text],.row input[type=password],.row input[type=number]{min-width:200px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{border:1px solid var(--bd);border-radius:10px;padding:10px}.stat b{display:block;font-size:20px}
+.mut{color:var(--mut);font-size:13px}.warn{color:var(--warn)}.bad{color:var(--bad)}.ok{color:var(--ok)}
+.box{border:1px dashed var(--bd);border-radius:10px;padding:10px;margin:8px 0;white-space:pre-wrap}
+.method{border:2px solid var(--bd);border-radius:12px;padding:10px;margin:8px 0;cursor:pointer}
+.method.sel{border-color:var(--pri)}
+.bar{height:14px;background:var(--bd);border-radius:7px;overflow:hidden}.bar>i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
+table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--bd);padding:6px;vertical-align:top;text-align:start}
+td textarea{width:100%;min-height:42px;resize:vertical}
+td.src{white-space:pre-wrap;word-break:break-word;min-width:200px}
+.tag{font-size:11px;border-radius:10px;padding:1px 8px;border:1px solid var(--bd)}
+.tag.flagged{color:var(--bad);border-color:var(--bad)}.tag.done,.tag.edited{color:var(--ok)}.tag.pending{color:var(--mut)}
+#jobbar{display:none}
+pre.pk{white-space:pre-wrap;max-height:160px;overflow:auto;background:var(--in);border:1px solid var(--bd);border-radius:8px;padding:8px;font-size:12px;direction:ltr;text-align:left;margin:4px 0}
+[dir=rtl] .ltr,.ltr{direction:ltr;text-align:left}
+.hide{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>HomiTranslate <span class="mut" id="ver"></span></h1>
+  <button id="bLang">EN</button>
+  <button id="bTheme">☾</button>
+</header>
+<main>
+<div class="steps" id="steps"></div>
+
+<div class="card" id="jobbar">
+  <div class="row"><b id="jobTitle"></b><span class="mut" id="jobMsg"></span><span style="flex:1"></span>
+    <button id="bStop" data-i="stop"></button></div>
+  <div class="bar"><i id="jobFill"></i></div>
+  <div class="mut" id="jobNums"></div>
+</div>
+
+<section id="p1" class="panel">
+ <div class="card">
+  <h2 data-i="s1"></h2>
+  <div class="row">
+    <label><span data-i="path"></span><input type="text" id="fPath" class="ltr" style="min-width:420px" placeholder="D:\games\mygame\en.json"></label>
+    <label><span data-i="orPick"></span><input type="file" id="fFile"></label>
+  </div>
+  <div class="row">
+    <label><span data-i="fmt"></span><select id="fFmt"><option value="">auto</option><option>json</option><option>csv</option><option>po</option><option>txt</option><option>kv</option></select></label>
+    <label><span data-i="target"></span><select id="fTarget"></select></label>
+    <label><span data-i="csvSrc"></span><input type="text" id="fSrc" class="ltr" placeholder="en"></label>
+    <label><span data-i="csvDst"></span><input type="text" id="fDst" class="ltr" placeholder="fa"></label>
+    <label><span data-i="delim"></span><input type="text" id="fDelim" class="ltr" style="min-width:60px;width:60px"></label>
+  </div>
+  <div class="row"><button class="pri" id="bOpen" data-i="analyze"></button><span id="openErr" class="bad"></span></div>
+  <p class="mut" data-i="safe"></p>
+ </div>
+</section>
+
+<section id="p2" class="panel hide">
+ <div class="card"><h2 data-i="s2"></h2><div class="grid" id="stats"></div></div>
+ <div class="card"><h2 data-i="engine"></h2><div id="engine"></div><div class="box" id="guide"></div><div class="box warn" id="fontw"></div></div>
+ <div class="row"><button class="pri" data-go="3"><span data-i="next"></span></button></div>
+</section>
+
+<section id="p3" class="panel hide">
+ <div class="card"><h2 data-i="s3"></h2>
+  <div class="mut" id="hw"></div>
+  <div id="methods"></div>
+ </div>
+ <div class="card" id="cfgA"><h2>A · Ollama</h2>
+  <div class="row">
+    <label>URL<input type="text" id="oUrl" class="ltr"></label>
+    <label data-i="model"><span></span><select id="oModelSel"></select></label>
+    <label>&nbsp;<input type="text" id="oModel" class="ltr" placeholder="gemma3:12b"></label>
+  </div>
+  <div class="row"><button id="bPull" data-i="pull"></button><span class="mut" id="pullNote"></span></div>
+ </div>
+ <div class="card" id="cfgB"><h2>B · API (OpenAI-compatible)</h2>
+  <div class="row">
+    <label><span data-i="preset"></span><select id="bPreset"><option value="">—</option>
+      <option value="https://api.deepseek.com|deepseek-chat">DeepSeek</option>
+      <option value="https://openrouter.ai/api/v1|google/gemma-3-27b-it">OpenRouter</option>
+      <option value="https://generativelanguage.googleapis.com/v1beta/openai|gemini-2.0-flash">Gemini</option></select></label>
+    <label>base_url<input type="text" id="bUrl" class="ltr" style="min-width:300px"></label>
+    <label>model<input type="text" id="bModel" class="ltr"></label>
+    <label>API key<input type="password" id="bKey" class="ltr" autocomplete="off"></label>
+    <label><span data-i="proxy"></span><input type="text" id="bProxy" class="ltr" placeholder="http://127.0.0.1:10808"></label>
+  </div>
+  <div class="mut" data-i="keyNote"></div>
+ </div>
+ <div class="card"><h2 data-i="common"></h2>
+  <div class="row">
+    <label><span data-i="batch"></span><input type="number" id="cBatch" min="5" max="60"></label>
+    <label><span data-i="ctx"></span><input type="number" id="cCtx" min="0" max="10"></label>
+    <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="cShape"><span data-i="shape"></span></label>
+  </div>
+  <div class="row"><button class="pri" id="bSaveCfg" data-i="save"></button><button id="bSpeed" data-i="speed"></button><span id="speedRes" class="mut"></span></div>
+ </div>
+ <div class="row"><button class="pri" data-go="4"><span data-i="next"></span></button></div>
+</section>
+
+<section id="p4" class="panel hide">
+ <div class="card"><h2 data-i="s4"></h2>
+  <p class="mut" data-i="glNote"></p>
+  <div class="row"><button id="bGlEx" data-i="glExtract"></button><button id="bGlTr" data-i="glTranslate"></button>
+    <input type="text" id="glNew" class="ltr" placeholder="term"><button id="bGlAdd" data-i="add"></button></div>
+  <div style="overflow:auto"><table><thead><tr><th>#</th><th data-i="term"></th><th data-i="translation"></th><th></th></tr></thead><tbody id="glBody"></tbody></table></div>
+ </div>
+ <div class="row"><button class="pri" data-go="5"><span data-i="next"></span></button></div>
+</section>
+
+<section id="p5" class="panel hide">
+ <div class="card"><h2 data-i="s5"></h2>
+  <div id="apiRun">
+    <div class="row"><button class="pri" id="bGo" data-i="start"></button><button id="bAgain" data-i="retryFlagged"></button></div>
+    <p class="mut" data-i="resumeNote"></p>
+  </div>
+  <div id="manualRun" class="hide">
+    <p class="mut" data-i="manNote"></p>
+    <div class="row"><button class="pri" id="bPk" data-i="makePk"></button></div>
+    <div id="pkList"></div>
+    <h3 data-i="paste"></h3>
+    <textarea id="pasteBox" class="ltr" style="width:100%;min-height:120px"></textarea>
+    <div class="row"><button class="pri" id="bMerge" data-i="merge"></button><span id="mergeRes"></span></div>
+  </div>
+ </div>
+ <div class="row"><button class="pri" data-go="6"><span data-i="next"></span></button></div>
+</section>
+
+<section id="p6" class="panel hide">
+ <div class="card"><h2 data-i="s6"></h2>
+  <div class="row">
+    <label><span data-i="filter"></span><select id="rFilter"><option value="all" data-i="fAll"></option><option value="flagged" data-i="fFlag"></option><option value="pending" data-i="fPend"></option><option value="edited" data-i="fEdit"></option></select></label>
+    <label><span data-i="search"></span><input type="text" id="rQ"></label>
+    <button id="rPrev">‹</button><span id="rPage" class="mut"></span><button id="rNext">›</button>
+  </div>
+  <div style="overflow:auto"><table><thead><tr><th>#</th><th data-i="source"></th><th data-i="translation"></th><th></th></tr></thead><tbody id="rBody"></tbody></table></div>
+ </div>
+ <div class="row"><button class="pri" data-go="7"><span data-i="next"></span></button></div>
+</section>
+
+<section id="p7" class="panel hide">
+ <div class="card"><h2 data-i="s7"></h2>
+  <div class="grid" id="report"></div>
+  <div class="row"><label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="eShape"><span data-i="shape"></span></label></div>
+  <div class="row">
+    <button class="pri" data-exp="file" data-i="expFile"></button>
+    <button data-exp="texts" data-i="expTexts"></button>
+    <button data-exp="glossary" data-i="expGl"></button>
+    <button data-exp="prompt" data-i="expPrompt"></button>
+  </div>
+  <div id="expRes" class="box hide"></div>
+  <p class="mut" data-i="legal"></p>
+ </div>
+</section>
+</main>
+
+<script>
+const I18N={
+fa:{stop:"توقف",s1:"۱. انتخاب فایل",s2:"۲. تحلیل فایل",s3:"۳. پیشنهاد روش ترجمه",s4:"۴. واژه‌نامه",s5:"۵. ترجمه",s6:"۶. بازبینی",s7:"۷. خروجی",
+ steps:["فایل","تحلیل","روش","واژه‌نامه","ترجمه","بازبینی","خروجی"],
+ path:"مسیر فایل",orPick:"یا انتخاب از رایانه",fmt:"قالب",target:"زبان مقصد",csvSrc:"ستون مبدأ (CSV)",csvDst:"ستون مقصد (CSV)",delim:"جداکننده",
+ analyze:"باز کردن و تحلیل",safe:"فایل ورودی هرگز تغییر نمی‌کند؛ خروجی در پوشه‌ی out/ ذخیره می‌شود.",next:"مرحله‌ی بعد ←",
+ lines:"خط",chars:"کاراکتر",tokens:"توکن تقریبی",codePct:"خط‌های دارای کد",uniq:"خط یکتا",srcLang:"زبان مبدأ (حدس)",
+ engine:"حدس موتور بازی",guideT:"راهنمای درآوردن و برگرداندن متن",model:"مدل",pull:"دانلود مدل پیشنهادی",preset:"پیش‌تنظیم",proxy:"پروکسی HTTP (اختیاری)",
+ keyNote:"کلید فقط در config.local.json روی همین رایانه ذخیره می‌شود.",common:"تنظیمات مشترک",batch:"خط در هر درخواست",ctx:"خط زمینه (قبل/بعد)",
+ shape:"چسباندن حروف و راست‌به‌چپ (برای موتورهایی که فارسی را پشتیبانی نمی‌کنند)",save:"ذخیره‌ی تنظیمات",speed:"تست سرعت",
+ glNote:"اسم‌های خاص و اصطلاح‌های تکراری. ترجمه‌ی هر مورد را ویرایش کنید یا با هوش مصنوعی پر کنید؛ در همه‌ی دسته‌ها به مدل داده می‌شود.",
+ glExtract:"استخراج دوباره",glTranslate:"ترجمه‌ی واژه‌نامه با هوش مصنوعی",add:"افزودن",term:"عبارت",translation:"ترجمه",
+ start:"شروع / ادامه",retryFlagged:"تلاش دوباره برای خط‌های علامت‌خورده",resumeNote:"اگر کار قطع شود، دوباره بزنید؛ از همان‌جا ادامه پیدا می‌کند.",
+ manNote:"بسته‌ها را یکی‌یکی در یک سایت چت رایگان بچسبانید، جواب را در کادر پایین paste کنید.",makePk:"ساخت بسته‌ها",paste:"چسباندن جواب سایت",merge:"ادغام جواب",
+ filter:"فیلتر",search:"جستجو",fAll:"همه",fFlag:"خراب/علامت‌خورده",fPend:"ترجمه‌نشده",fEdit:"ویرایش‌شده",source:"متن اصلی",retr:"ترجمه‌ی دوباره‌ی این خط",
+ expFile:"فایل ترجمه‌شده",expTexts:"فهرست همه‌ی متن‌ها (CSV)",expGl:"فقط واژه‌نامه",expPrompt:"پرامپت ترجمه",
+ legal:"هشدار: دست‌کاری فایل‌های بازی‌های آنلاین ممکن است به بن شدن حساب بینجامد؛ قوانین سازنده‌ی بازی را رعایت کنید.",
+ running:"در حال اجرا",done:"انجام شد",stopped:"متوقف شد",error:"خطا",saved:"ذخیره شد",
+ c_done:"ترجمه‌شده",c_pending:"مانده",c_flagged:"علامت‌خورده",c_edited:"ویرایش‌شده",c_skip:"بدون نیاز به ترجمه",c_total:"کل",
+ rank:"اولویت",est:"زمان تقریبی",gpu:"کارت گرافیک",none:"پیدا نشد",ollama:"Ollama",installed:"مدل‌های نصب‌شده",suggest:"مدل پیشنهادی",
+ confirmPull:"مدل «%s» دانلود شود؟ (ممکن است چند گیگابایت باشد)",noFile:"اول یک فایل باز کنید",copy:"کپی",packet:"بسته",
+ mergeRes:"پذیرفته: %ok | خراب: %bad | جاافتاده: %miss | مانده: %rem",secs:"ثانیه",mins:"دقیقه",perLine:"ثانیه برای هر خط",total:"کل (تقریبی)",
+ tipPull:"فقط با تأیید شما دانلود می‌شود.",needOllama:"Ollama در دسترس نیست",del:"حذف"},
+en:{stop:"Stop",s1:"1. Choose file",s2:"2. File analysis",s3:"3. Suggested method",s4:"4. Glossary",s5:"5. Translate",s6:"6. Review",s7:"7. Export",
+ steps:["File","Analysis","Method","Glossary","Translate","Review","Export"],
+ path:"File path",orPick:"or pick from computer",fmt:"Format",target:"Target language",csvSrc:"Source column (CSV)",csvDst:"Destination column (CSV)",delim:"Delimiter",
+ analyze:"Open & analyze",safe:"The input file is never modified; output goes to the out/ folder.",next:"Next →",
+ lines:"lines",chars:"characters",tokens:"approx. tokens",codePct:"lines with codes",uniq:"unique lines",srcLang:"source language (guess)",
+ engine:"Game engine guess",guideT:"How to extract / re-import the text",model:"Model",pull:"Download suggested model",preset:"Preset",proxy:"HTTP proxy (optional)",
+ keyNote:"The key is stored only in config.local.json on this computer.",common:"Common settings",batch:"Lines per request",ctx:"Context lines (before/after)",
+ shape:"Join letters + right-to-left order (for engines without Persian support)",save:"Save settings",speed:"Speed test",
+ glNote:"Proper names and repeated terms. Edit each translation or fill them with AI; the glossary is sent to the model with every batch.",
+ glExtract:"Extract again",glTranslate:"Translate glossary with AI",add:"Add",term:"Term",translation:"Translation",
+ start:"Start / Resume",retryFlagged:"Retry flagged lines",resumeNote:"If the run is interrupted, press again - it continues where it stopped.",
+ manNote:"Paste the packets one by one into a free chat site, then paste its answer in the box below.",makePk:"Build packets",paste:"Paste the site's answer",merge:"Merge answer",
+ filter:"Filter",search:"Search",fAll:"All",fFlag:"Broken / flagged",fPend:"Untranslated",fEdit:"Edited",source:"Source",retr:"Re-translate this line",
+ expFile:"Translated file",expTexts:"All texts list (CSV)",expGl:"Glossary only",expPrompt:"Translation prompt",
+ legal:"Warning: modifying files of online games can get your account banned; respect the game developer's rules.",
+ running:"Running",done:"Done",stopped:"Stopped",error:"Error",saved:"Saved",
+ c_done:"translated",c_pending:"remaining",c_flagged:"flagged",c_edited:"edited",c_skip:"no translation needed",c_total:"total",
+ rank:"Priority",est:"Approx. time",gpu:"GPU",none:"not found",ollama:"Ollama",installed:"Installed models",suggest:"Suggested model",
+ confirmPull:"Download model \"%s\"? (may be several GB)",noFile:"Open a file first",copy:"Copy",packet:"Packet",
+ mergeRes:"accepted: %ok | broken: %bad | missing: %miss | remaining: %rem",secs:"s",mins:"min",perLine:"s per line",total:"total (approx.)",
+ tipPull:"Downloads only after you confirm.",needOllama:"Ollama is not reachable",del:"Delete"}
+};
+let L=localStorage.getItem("ht_lang")||"fa", S={}, step=1, page=0, job=null, poll=null, pickedMethod="A";
+const $=id=>document.getElementById(id), qa=s=>[...document.querySelectorAll(s)];
+const t=k=>(I18N[L][k]??I18N.en[k]??k);
+function h(tag,attrs,...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs||{})){if(k==="class")e.className=v;else if(k.startsWith("on"))e[k]=v;else e.setAttribute(k,v)}for(const c of kids.flat())e.append(c instanceof Node?c:document.createTextNode(c??""));return e}
+async function api(path,body){
+  const o=body===undefined?{}:{method:"POST",headers:{"Content-Type":"application/json","X-HT":"1"},body:JSON.stringify(body)};
+  const r=await fetch(path,o);let j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error||r.statusText);return j}
+function i18n(){
+  document.documentElement.lang=L;document.documentElement.dir=L==="fa"?"rtl":"ltr";$("bLang").textContent=L==="fa"?"EN":"فا";
+  qa("[data-i]").forEach(e=>{const k=e.dataset.i;if(e.tagName==="LABEL"){e.firstElementChild.textContent=t(k)}else e.textContent=t(k)});
+  drawSteps();if(S.info)render2();renderMethods();refreshGlossary();
+}
+function drawSteps(){const b=$("steps");b.innerHTML="";t("steps").forEach((n,i)=>b.append(h("button",{class:step===i+1?"on":"",onclick:()=>go(i+1)},(i+1)+". "+n)))}
+function go(n){if(n>1&&!S.info){return}step=n;qa(".panel").forEach(p=>p.classList.add("hide"));$("p"+n).classList.remove("hide");drawSteps();
+  if(n===3)loadMethods();if(n===4)refreshGlossary();if(n===5)prep5();if(n===6){page=0;loadLines()}if(n===7)loadReport()}
+qa("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+$("bLang").onclick=()=>{L=L==="fa"?"en":"fa";localStorage.setItem("ht_lang",L);i18n()};
+$("bTheme").onclick=()=>{const d=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=d;localStorage.setItem("ht_theme",d);$("bTheme").textContent=d==="dark"?"☀":"☾"};
+(function(){const d=localStorage.getItem("ht_theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=d;$("bTheme").textContent=d==="dark"?"☀":"☾"})();
+
+// ---------- step 1
+async function init(){
+  S=await api("/api/state");$("ver").textContent="v"+S.version;
+  const sel=$("fTarget");sel.innerHTML="";
+  for(const[c,[en,fa]]of Object.entries(S.langs))sel.append(h("option",{value:c},(L==="fa"?fa:en)+" ("+c+")"));
+  sel.value=S.cfg.target;fillCfg();i18n();if(S.info)render2();
+}
+function fillCfg(){const c=S.cfg;$("oUrl").value=c.ollama.url;$("oModel").value=c.ollama.model;$("bUrl").value=c.openai.base_url;$("bModel").value=c.openai.model;$("bProxy").value=c.openai.proxy||"";
+  $("bKey").placeholder=c.openai.has_key?"•••• (saved)":"";$("cBatch").value=c.batch;$("cCtx").value=c.context;$("cShape").checked=!!c.shape;$("eShape").checked=!!c.shape}
+$("fFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("fPath").value="";$("fPath").dataset.upload=f.name};
+$("bOpen").onclick=async()=>{
+  $("openErr").textContent="";const body={target:$("fTarget").value,fmt:$("fFmt").value,src:$("fSrc").value,dst:$("fDst").value,delimiter:$("fDelim").value};
+  try{
+    const f=$("fFile").files[0];
+    if(f&&!$("fPath").value.trim()){const buf=new Uint8Array(await f.arrayBuffer());let s="";for(let i=0;i<buf.length;i+=32768)s+=String.fromCharCode.apply(null,buf.subarray(i,i+32768));body.content_b64=btoa(s);body.name=f.name}
+    else body.path=$("fPath").value;
+    $("bOpen").disabled=true;S.info=await api("/api/open",body);render2();go(2);
+  }catch(e){$("openErr").textContent=e.message}finally{$("bOpen").disabled=false}
+};
+// ---------- step 2
+function render2(){
+  const i=S.info;if(!i)return;const g=$("stats");g.innerHTML="";
+  [[i.lines,t("lines")],[i.unique_lines,t("uniq")],[i.chars,t("chars")],["~"+i.tokens,t("tokens")],[i.code_percent+"%",t("codePct")],[i.source_lang_name,t("srcLang")]]
+   .forEach(([v,l])=>g.append(h("div",{class:"stat"},h("b",{},String(v)),l)));
+  $("engine").textContent=i.engine_name+" ("+i.engine_confidence+")";$("guide").textContent=i.guide[L];
+  $("fontw").classList.toggle("hide",!i.font_warn);$("fontw").textContent=i.font_warning[L];
+}
+// ---------- step 3
+let REC=null;
+function fmtTime(s){if(s==null)return"—";return s<90?s+" "+t("secs"):Math.round(s/60)+" "+t("mins")}
+async function loadMethods(){try{REC=await api("/api/recommend");pickedMethod=S.cfg.backend==="openai"?"B":S.cfg.backend==="ollama"?"A":"C";if(REC.methods.length&&!S.picked){pickedMethod=REC.primary;}renderMethods();fillModels()}catch(e){$("hw").textContent=e.message}}
+function renderMethods(){
+  if(!REC)return;const r=REC;
+  $("hw").textContent=t("gpu")+": "+(r.gpu?r.gpu.name+" · "+r.gpu.vram_gb+" GB":t("none"))+" | Ollama: "+(r.ollama.running?"OK ("+r.ollama.models.length+")":t("needOllama"))+(r.suggest_model?" | "+t("suggest")+": "+r.suggest_model:"");
+  const box=$("methods");box.innerHTML="";
+  r.methods.forEach(m=>box.append(h("div",{class:"method"+(pickedMethod===m.id?" sel":""),onclick:()=>{pickedMethod=m.id;S.picked=1;renderMethods()}},
+    h("b",{},"#"+m.rank+"  "+({A:"A · Ollama",B:"B · API",C:"C · "+(L==="fa"?"دستی":"Manual")})[m.id]),h("div",{},m.reason[L]),h("div",{class:"mut"},t("est")+": "+fmtTime(m.est_seconds)))));
+  r.notes.forEach(n=>box.append(h("div",{class:"warn"},n[L])));
+  $("cfgA").classList.toggle("hide",pickedMethod!=="A");$("cfgB").classList.toggle("hide",pickedMethod!=="B");$("bSpeed").classList.toggle("hide",pickedMethod==="C");
+}
+function fillModels(){const s=$("oModelSel");s.innerHTML="";const names=[...(REC.ollama.models||[])];if(REC.suggest_model&&!names.includes(REC.suggest_model))names.unshift(REC.suggest_model);
+  names.forEach(n=>s.append(h("option",{value:n},n+(REC.ollama.models.includes(n)?"":" ⬇"))));
+  if(REC.use_installed)$("oModel").value=REC.use_installed;else if(REC.suggest_model&&!$("oModel").value)$("oModel").value=REC.suggest_model;
+  $("pullNote").textContent=REC.needs_pull?t("tipPull"):""}
+$("oModelSel").onchange=e=>$("oModel").value=e.target.value;
+$("bPreset").onchange=e=>{const[v,m]=(e.target.value||"|").split("|");if(v){$("bUrl").value=v;$("bModel").value=m}};
+async function saveCfg(){
+  const backend=pickedMethod==="A"?"ollama":pickedMethod==="B"?"openai":"ollama";
+  S.cfg=await api("/api/config",{backend,batch:+$("cBatch").value,context:+$("cCtx").value,shape:$("cShape").checked,
+    ollama:{url:$("oUrl").value,model:$("oModel").value},openai:{base_url:$("bUrl").value,model:$("bModel").value,proxy:$("bProxy").value,api_key:$("bKey").value}});
+  $("bKey").value="";fillCfg();return S.cfg}
+$("bSaveCfg").onclick=async()=>{await saveCfg();$("speedRes").textContent=t("saved")};
+$("bSpeed").onclick=async()=>{$("speedRes").textContent="…";try{await saveCfg();const r=await api("/api/speedtest",{});
+  $("speedRes").textContent=r.seconds_per_line==null?"—":r.seconds_per_line+" "+t("perLine")+" · "+t("total")+": "+fmtTime(r.estimate_seconds)+" ("+r.ok+"/"+r.n+")"}catch(e){$("speedRes").textContent=e.message}};
+$("bPull").onclick=async()=>{const m=$("oModel").value.trim();if(!m||!confirm(t("confirmPull").replace("%s",m)))return;
+  try{await api("/api/pull",{model:m,confirm:true});watch()}catch(e){alert(e.message)}};
+// ---------- step 4
+async function refreshGlossary(){
+  if(!S.info)return;const b=$("glBody");const r=await api("/api/glossary");b.innerHTML="";
+  r.items.forEach(g=>{const inp=h("input",{type:"text",value:g.tr||"",style:"width:100%"});inp.onchange=()=>api("/api/glossary/save",{term:g.term,tr:inp.value});
+    b.append(h("tr",{},h("td",{},String(g.count)),h("td",{class:"src ltr"},g.term),h("td",{},inp),h("td",{},h("button",{title:t("del"),onclick:async()=>{await api("/api/glossary/delete",{term:g.term});refreshGlossary()}},"✕"))))})}
+$("bGlEx").onclick=async()=>{await api("/api/glossary/extract",{});refreshGlossary()};
+$("bGlAdd").onclick=async()=>{const v=$("glNew").value.trim();if(v){await api("/api/glossary/save",{term:v,tr:""});$("glNew").value="";refreshGlossary()}};
+$("bGlTr").onclick=async()=>{try{await saveCfgIfNeeded();await api("/api/glossary/translate",{});watch()}catch(e){alert(e.message)}};
+async function saveCfgIfNeeded(){if(!REC)await loadMethods();return saveCfg()}
+// ---------- step 5
+function prep5(){const man=pickedMethod==="C";$("apiRun").classList.toggle("hide",man);$("manualRun").classList.toggle("hide",!man)}
+$("bGo").onclick=async()=>{try{await saveCfgIfNeeded();await api("/api/translate",{});watch()}catch(e){alert(e.message)}};
+$("bAgain").onclick=async()=>{try{await saveCfgIfNeeded();await api("/api/translate",{flagged_again:true});watch()}catch(e){alert(e.message)}};
+$("bStop").onclick=()=>api("/api/stop",{});
+$("bPk").onclick=async()=>{const r=await api("/api/manual/packets",{});const b=$("pkList");b.innerHTML="";
+  if(!r.packets.length)b.append(h("div",{class:"ok"},"✓ 0"));
+  r.packets.forEach((p,i)=>{const pre=h("pre",{class:"pk"},p.prompt);b.append(h("div",{},h("b",{},t("packet")+" "+(i+1)+" / "+r.packets.length+" ("+p.ids.length+")"),h("button",{style:"margin:0 8px",onclick:async()=>{try{await navigator.clipboard.writeText(p.prompt)}catch(e){const r=document.createRange();r.selectNodeContents(pre);getSelection().removeAllRanges();getSelection().addRange(r);document.execCommand("copy")}}},t("copy")),pre))})};
+$("bMerge").onclick=async()=>{const r=await api("/api/manual/merge",{text:$("pasteBox").value});
+  $("mergeRes").textContent=t("mergeRes").replace("%ok",r.ok).replace("%bad",r.bad.length).replace("%miss",r.missing_in_answer.length).replace("%rem",r.remaining);
+  $("pasteBox").value="";if(r.remaining)$("bPk").click();else $("pkList").innerHTML=""};
+// ---------- job bar
+function watch(){if(poll)return;poll=setInterval(tick,700);tick()}
+async function tick(){
+  try{const j=await api("/api/job");const bar=$("jobbar");const active=j.state==="running";bar.style.display=(j.kind&&j.state!=="idle")?"block":"none";
+    $("jobTitle").textContent=(j.kind||"")+" · "+t(j.state==="running"?"running":j.state==="done"?"done":j.state==="stopped"?"stopped":"error");
+    $("jobMsg").textContent=j.error||j.msg||"";$("jobMsg").className=j.error?"bad":"mut";
+    const pc=j.total?Math.min(100,100*j.done/j.total):0;$("jobFill").style.width=pc+"%";
+    $("jobNums").textContent=j.total?j.done+" / "+j.total+(j.flagged?" · "+t("c_flagged")+": "+j.flagged:""):"";
+    $("bStop").disabled=!active;
+    if(!active){clearInterval(poll);poll=null;if(step===4)refreshGlossary();if(step===3)loadMethods()}
+  }catch(e){clearInterval(poll);poll=null}
+}
+// ---------- step 6
+async function loadLines(){
+  const q=new URLSearchParams({filter:$("rFilter").value,q:$("rQ").value,offset:page*50,limit:50});const r=await api("/api/lines?"+q);
+  const b=$("rBody");b.innerHTML="";const pages=Math.max(1,Math.ceil(r.total/50));$("rPage").textContent=(page+1)+" / "+pages+" ("+r.total+")";
+  r.rows.forEach(x=>{const ta=h("textarea",{class:"ltr",dir:"auto"});ta.value=x.tr??"";ta.onchange=async()=>{await api("/api/line/save",{id:x.id,tr:ta.value});st.className="tag edited";st.textContent="edited"};
+    const st=h("span",{class:"tag "+x.status},x.status+(x.note?" · "+x.note:""));
+    const rb=h("button",{title:t("retr"),onclick:async()=>{rb.disabled=true;try{await saveCfgIfNeeded();const n=await api("/api/line/retranslate",{id:x.id});ta.value=n.tr??"";st.className="tag "+n.status;st.textContent=n.status}catch(e){alert(e.message)}rb.disabled=false}},"↻ "+t("retr"));
+    b.append(h("tr",{},h("td",{},String(x.id)),h("td",{class:"src",dir:"auto"},x.src),h("td",{},ta,st),h("td",{},rb)))})}
+$("rFilter").onchange=()=>{page=0;loadLines()};$("rQ").oninput=()=>{page=0;clearTimeout(window._q);window._q=setTimeout(loadLines,300)};
+$("rPrev").onclick=()=>{if(page>0){page--;loadLines()}};$("rNext").onclick=()=>{page++;loadLines()};
+// ---------- step 7
+async function loadReport(){const j=await api("/api/job");const c=j.counts||{};const g=$("report");g.innerHTML="";
+  ["total","done","edited","skip","flagged","pending"].forEach(k=>g.append(h("div",{class:"stat"},h("b",{class:k==="flagged"&&c[k]?"bad":""},String(c[k]??0)),t("c_"+k))))}
+qa("[data-exp]").forEach(b=>b.onclick=async()=>{const r=await api("/api/export",{kind:b.dataset.exp,shape:$("eShape").checked});const e=$("expRes");e.classList.remove("hide");e.textContent=t("saved")+": "+r.path});
+init().then(tick);
+</script>
+</body>
+</html>
